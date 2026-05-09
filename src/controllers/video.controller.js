@@ -1,6 +1,9 @@
 import mongoose, {isValidObjectId} from "mongoose"
 import {Video} from "../models/video.models.js"
 import {User} from "../models/user.models.js"
+import {Like} from "../models/like.models.js"
+import {Subscription} from "../models/subscription.models.js"
+import {Comment} from "../models/comment.models.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
@@ -122,19 +125,40 @@ const getVideoByID = asyncHandler(async (req, res) => {
     }
 
     const video = await Video.findById(videoId)
-
-    video.views = video.views + 1
-    video.save()
+        .populate("owner", "username fullName avatar")
 
     if(!video){
         throw new ApiError(404 , "video not found")
+    }
+
+    video.views = video.views + 1
+    await video.save()
+
+    const ownerId = video.owner?._id
+    const userId = req.user?._id
+
+    const [likesCount, isLiked, subscribersCount, isSubscribed] = await Promise.all([
+        Like.countDocuments({ video: video._id }),
+        Like.exists({ video: video._id, likedBy: userId }),
+        ownerId ? Subscription.countDocuments({ channel: ownerId }) : 0,
+        ownerId && ownerId.toString() !== userId.toString()
+            ? Subscription.exists({ channel: ownerId, subscriber: userId })
+            : false
+    ])
+
+    const videoDetails = {
+        ...video.toObject(),
+        likesCount,
+        isLiked: Boolean(isLiked),
+        subscribersCount,
+        isSubscribed: Boolean(isSubscribed)
     }
 
     return res
     .status(200)
     .json(
         new ApiResponse(
-            200 , video , "video fetched successfully"
+            200 , videoDetails , "video fetched successfully"
         )
     )
 })
@@ -200,10 +224,20 @@ const deleteVideo = asyncHandler(async (req, res) => {
         throw new ApiError(401 , " video is not present")
     }
 
-    await deleteOnCloudinary(video?.videoFile?.public_id , "video")
-    await deleteOnCloudinary(video?.thumbnail?.public_id , "image")
+    if(video.owner?.toString() !== req.user?._id.toString()){
+        throw new ApiError(403 , "only owner can delete the video")
+    }
+
+    await Promise.allSettled([
+        deleteOnCloudinary(video?.videoFile?.public_id , "video"),
+        deleteOnCloudinary(video?.thumbnail?.public_id , "image")
+    ])
 
     const deletedVideo = await Video.findByIdAndDelete(videoId)
+    await Promise.all([
+        Comment.deleteMany({ video: videoId }),
+        Like.deleteMany({ video: videoId })
+    ])
 
     return res
     .status(200)

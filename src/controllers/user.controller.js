@@ -40,8 +40,8 @@ const registerUser = asyncHandler( async(req , res) => {
         throw new ApiError(409 , "User already exists with same email or username")
     }
 
-    const avatarLocalPath = req.files?.avatar[0]?.path ;
-    const coverImageLocalPath = req.files?.coverImage[0]?.path ;
+    const avatarLocalPath = req.files?.avatar?.[0]?.path ;
+    const coverImageLocalPath = req.files?.coverImage?.[0]?.path ;
 
     if(!avatarLocalPath){
         throw new ApiError(400 ,"avatar file is required")
@@ -336,13 +336,18 @@ const updateUserAvatar = asyncHandler(async(req , res) => {
 
     // delete old file from cloudinary
     const oldAvatarFile = req.user?.avatar?.public_id
-    await deleteOnCloudinary(oldAvatarFile)
+    await Promise.allSettled([
+        deleteOnCloudinary(oldAvatarFile)
+    ])
 
 
     const user = await User.findByIdAndUpdate(req.user?._id , 
         {
             $set : {
-                avatar : avatar.url,
+                avatar : {
+                    url : avatar.secure_url,
+                    public_id : avatar.public_id
+                },
             }
         },
         {
@@ -370,13 +375,18 @@ const updateUserCoverImage = asyncHandler(async(req, res)=>{
 
     // delete old file from cloudinary
     const oldCoverImageFile = req.user?.coverImage?.public_id
-    await deleteOnCloudinary(oldCoverImageFile)
+    await Promise.allSettled([
+        deleteOnCloudinary(oldCoverImageFile)
+    ])
 
     const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set : {
-                coverImage : coverImage.url
+                coverImage : {
+                    url : coverImage.secure_url,
+                    public_id : coverImage.public_id
+                }
             }
         },
         {new : true}

@@ -14,13 +14,13 @@ const getVideoComments = asyncHandler(async (req, res) => {
         throw new ApiError(400 , "invalid video id")
     }
 
-    const existVideo = await Video.findById(viedoId)
+    const existVideo = await Video.findById(videoId)
     if(!existVideo){
         throw new ApiError(404 , "video not found")
     }
 
-    const pageNum = parseInt(page)
-    const limitNum = parseInt(limit)
+    let pageNum = parseInt(page)
+    let limitNum = parseInt(limit)
 
     if(pageNum < 1) pageNum = 1
     if(limitNum < 1) limitNum = 1
@@ -32,6 +32,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
         Comment.find({
             video : videoId
         })
+        .populate("owner", "username fullName avatar.url")
         .sort({ createdAt: -1 })
         .limit(limitNum)
         .skip(skip)
@@ -40,10 +41,6 @@ const getVideoComments = asyncHandler(async (req, res) => {
             video : videoId
         })
     ])
-
-    if(comments.length===0){
-        throw new ApiError(404 , "no comments found")
-    }
 
     return res
     .status(200)
@@ -78,17 +75,20 @@ const addComment = asyncHandler(async(req , res) => {
 
     const comment = await Comment.create(
         {
-            content ,
+            content : content.trim(),
             video : videoId , 
             owner : req.user?._id
         }
     )
 
+    const createdComment = await Comment.findById(comment._id)
+        .populate("owner", "username fullName avatar.url")
+
     return res
     .status(201)
     .json(
         new ApiResponse(
-            201 , comment , "comment added successfully"
+            201 , createdComment , "comment added successfully"
         )
     )
 })

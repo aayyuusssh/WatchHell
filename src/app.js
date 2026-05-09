@@ -44,6 +44,17 @@ app.use("/api/v1/comment" , commentRouter)
 app.use("/api/v1/dashboard" , dashboardRouter)
 app.use("/api/v1/healthcheck" , healthcheckRouter)
 
+app.use((err, req, res, next) => {
+    const statusCode = err.statusCode || err.status || 500
+    const message = err.message || "Something went wrong. Please try again."
+
+    return res.status(statusCode).json({
+        statusCode,
+        data: null,
+        message,
+        success: false
+    })
+})
 
 
 

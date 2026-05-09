@@ -37,7 +37,7 @@ const toggleVideoLike = asyncHandler(async(req , res) => {
         )
     }
 
-    const removedLike = await Like.findOneAndDelete(existingLike._id)
+    const removedLike = await Like.findByIdAndDelete(existingLike._id)
 
     return res
     .status(200)
