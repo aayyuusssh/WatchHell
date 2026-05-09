@@ -4,12 +4,28 @@ import cors from "cors"
 
 const app = express()
 
-const allowedOrigins = (process.env.CORS_ORIGIN || "https://watch-hell.vercel.app").split(",").map((origin) => origin.trim()).filter(Boolean)
+const allowedOrigins = (process.env.CORS_ORIGIN || "https://watch-hell.vercel.app")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+
+const isOriginAllowed = (origin) => {
+    if (!origin) return true
+
+    return allowedOrigins.some((allowedOrigin) => {
+        if (allowedOrigin === "*") return true
+        if (allowedOrigin.includes("*")) {
+            const escaped = allowedOrigin.replace(/[.+?^${}()|[\]\\]/g, "\\$&")
+            const pattern = new RegExp(`^${escaped.replace(/\\\*/g, ".*")}$`, "i")
+            return pattern.test(origin)
+        }
+        return allowedOrigin.toLowerCase() === origin.toLowerCase()
+    })
+}
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin) return callback(null, true)
-        if (allowedOrigins.includes(origin)) return callback(null, true)
+        if (isOriginAllowed(origin)) return callback(null, true)
         callback(new Error("CORS policy does not allow access from this origin."))
     },
     credentials: true
