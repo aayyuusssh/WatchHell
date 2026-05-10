@@ -68,9 +68,9 @@ PORT=8000
 MONGODB_URI=your_mongodb_connection_string
 CORS_ORIGIN=http://localhost:5173,https://watch-hell.vercel.app
 ACCESS_TOKEN_SECRET=your_jwt_access_secret
-ACCESS_TOKEN_EXPIRY=1d
+ACCESS_TOKEN_EXPIRY=
 REFRESH_TOKEN_SECRET=your_jwt_refresh_secret
-REFRESH_TOKEN_EXPIRY=10d
+REFRESH_TOKEN_EXPIRY=
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
@@ -114,13 +114,12 @@ This repo uses **Render** for backend deployment.
 
 - Deploy the backend service on **Render**
 - Add the same env vars from your local `.env`
-- Set `CORS_ORIGIN` to your frontend domain:
+- Set `CORS_ORIGIN` to frontend domain:
 
 ```text
 https://watch-hell.vercel.app
 ```
 
-> Do not use `*` with `credentials: true`.
 
 ### Frontend on Vercel
 
@@ -147,15 +146,6 @@ VITE_API_BASE_URL=https://<your-render-backend-domain>/api/v1
 - `POST /api/v1/video`
 - `GET /api/v1/comment/:videoId`
 - `POST /api/v1/comment/:videoId`
-
----
-
-## 📝 Notes
-
-- Keep secret keys out of GitHub.
-- `VITE_API_BASE_URL` is only applied during the frontend build.
-- `CORS_ORIGIN` cannot be `*` with `credentials: true`.
-- Use Render for backend and Vercel for frontend.
 
 ---
 
