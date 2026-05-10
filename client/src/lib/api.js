@@ -156,5 +156,17 @@ export const userApi = {
   },
   history() {
     return apiRequest("/users/history")
+  },
+  updateDetails(values) {
+    return apiRequest("/users/update-account", {
+      method: "PATCH",
+      body: JSON.stringify(values)
+    })
+  },
+  changePassword(values) {
+    return apiRequest("/users/password-change", {
+      method: "POST",
+      body: JSON.stringify(values)
+    })
   }
 }

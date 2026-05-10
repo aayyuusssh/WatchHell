@@ -296,27 +296,43 @@ const getCurrentUser = asyncHandler(async (req,res) => {
 })
 
 const updateAccountDetails = asyncHandler(async(req, res) => {
-    const { email , fullName } = req.body
+    const { username, fullName, email } = req.body
 
-    if(!email || !fullName){
-        throw new ApiError(401 , "All field are required")
+    if (!username?.trim() || !fullName?.trim()) {
+        throw new ApiError(400, "Username and full name are required")
+    }
+
+    const normalizedUsername = username.toLowerCase().trim()
+    const normalizedEmail = email?.toLowerCase().trim()
+
+    const existingUser = await User.findOne({
+        $or: [
+            { username: normalizedUsername },
+            ...(normalizedEmail ? [{ email: normalizedEmail }] : [])
+        ],
+        _id: { $ne: req.user._id }
+    })
+
+    if (existingUser) {
+        throw new ApiError(409, "Username or email already in use")
     }
 
     const user = await User.findByIdAndUpdate(
-        req.user?._id,
+        req.user._id,
         {
-            $set : {
-                email,
-                fullName
+            $set: {
+                username: normalizedUsername,
+                fullName: fullName.trim(),
+                ...(normalizedEmail ? { email: normalizedEmail } : {})
             }
         },
-        {new : true}
-    ).select("-password")
+        { new: true }
+    ).select("-password -refreshToken")
 
     return res
     .status(200)
     .json(new ApiResponse(
-        200 , user , "Account details updated successfully"
+        200, user, "Account details updated successfully"
     ))
 })
 

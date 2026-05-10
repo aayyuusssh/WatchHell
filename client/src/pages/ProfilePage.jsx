@@ -19,6 +19,22 @@ export default function ProfilePage({ user, onUserUpdate }) {
   const [deletingVideoId, setDeletingVideoId] = useState("")
   const [error, setError] = useState("")
   const [actionError, setActionError] = useState("")
+  const [accountError, setAccountError] = useState("")
+  const [accountSuccess, setAccountSuccess] = useState("")
+  const [passwordError, setPasswordError] = useState("")
+  const [passwordSuccess, setPasswordSuccess] = useState("")
+  const [accountLoading, setAccountLoading] = useState(false)
+  const [passwordLoading, setPasswordLoading] = useState(false)
+  const [accountValues, setAccountValues] = useState({
+    username: user?.username || "",
+    fullName: user?.fullName || "",
+    email: user?.email || ""
+  })
+  const [passwordValues, setPasswordValues] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  })
   const isOwnProfile = activeUsername === user?.username
 
   useEffect(() => {
@@ -66,6 +82,15 @@ export default function ProfilePage({ user, onUserUpdate }) {
       alive = false
     }
   }, [activeUsername])
+
+  useEffect(() => {
+    if (!channel) return
+    setAccountValues({
+      username: channel.username || "",
+      fullName: channel.fullName || "",
+      email: channel.email || ""
+    })
+  }, [channel])
 
   async function toggleSubscription() {
     if (!channel?._id) return
@@ -122,6 +147,53 @@ export default function ProfilePage({ user, onUserUpdate }) {
       setActionError(err.message)
     } finally {
       setDeletingVideoId("")
+    }
+  }
+
+  async function handleAccountSubmit(event) {
+    event.preventDefault()
+    setAccountError("")
+    setAccountSuccess("")
+    setAccountLoading(true)
+    try {
+      const payload = await userApi.updateDetails({
+        username: accountValues.username,
+        fullName: accountValues.fullName,
+        email: accountValues.email
+      })
+      const updatedUser = payload.data
+      setChannel((current) => ({ ...current, ...updatedUser }))
+      onUserUpdate?.((current) => ({ ...current, ...updatedUser }))
+      setAccountSuccess("Profile updated successfully")
+    } catch (err) {
+      setAccountError(err.message)
+    } finally {
+      setAccountLoading(false)
+    }
+  }
+
+  async function handlePasswordSubmit(event) {
+    event.preventDefault()
+    setPasswordError("")
+    setPasswordSuccess("")
+
+    if (passwordValues.newPassword !== passwordValues.confirmPassword) {
+      setPasswordError("New passwords do not match")
+      return
+    }
+
+    setPasswordLoading(true)
+    try {
+      await userApi.changePassword({
+        oldPassword: passwordValues.currentPassword,
+        newPassword: passwordValues.newPassword
+      })
+      setPasswordSuccess("Password changed successfully")
+      setPasswordValues({ currentPassword: "", newPassword: "", confirmPassword: "" })
+    } catch (err) {
+      setPasswordError(err.message)
+    } finally {
+      setPasswordLoading(false)
     }
   }
 
@@ -267,6 +339,98 @@ export default function ProfilePage({ user, onUserUpdate }) {
               })
             )}
           </div>
+          {isOwnProfile ? (
+            <div className="mt-6 rounded-lg border-t border-slate-200 pt-6">
+              <h3 className="text-sm font-semibold text-slate-950">Edit profile</h3>
+              <p className="mt-1 text-sm text-slate-500">Update your username, full name, or email.</p>
+              <form className="mt-4 space-y-4" onSubmit={handleAccountSubmit}>
+                <label className="block text-sm text-slate-700">
+                  Username
+                  <input
+                    value={accountValues.username}
+                    onChange={(event) => setAccountValues((current) => ({ ...current, username: event.target.value }))}
+                    className="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                    required
+                  />
+                </label>
+                <label className="block text-sm text-slate-700">
+                  Full name
+                  <input
+                    value={accountValues.fullName}
+                    onChange={(event) => setAccountValues((current) => ({ ...current, fullName: event.target.value }))}
+                    className="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                    required
+                  />
+                </label>
+                <label className="block text-sm text-slate-700">
+                  Email
+                  <input
+                    type="email"
+                    value={accountValues.email}
+                    onChange={(event) => setAccountValues((current) => ({ ...current, email: event.target.value }))}
+                    className="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                  />
+                </label>
+                {accountError ? <p className="text-sm text-rose-600">{accountError}</p> : null}
+                {accountSuccess ? <p className="text-sm text-emerald-600">{accountSuccess}</p> : null}
+                <button
+                  type="submit"
+                  disabled={accountLoading}
+                  className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {accountLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+                  Save changes
+                </button>
+              </form>
+
+              <div className="mt-6 border-t border-slate-200 pt-6">
+                <h3 className="text-sm font-semibold text-slate-950">Change password</h3>
+                <p className="mt-1 text-sm text-slate-500">Enter your current password and new password.</p>
+                <form className="mt-4 space-y-4" onSubmit={handlePasswordSubmit}>
+                  <label className="block text-sm text-slate-700">
+                    Current password
+                    <input
+                      type="password"
+                      value={passwordValues.currentPassword}
+                      onChange={(event) => setPasswordValues((current) => ({ ...current, currentPassword: event.target.value }))}
+                      className="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                      required
+                    />
+                  </label>
+                  <label className="block text-sm text-slate-700">
+                    New password
+                    <input
+                      type="password"
+                      value={passwordValues.newPassword}
+                      onChange={(event) => setPasswordValues((current) => ({ ...current, newPassword: event.target.value }))}
+                      className="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                      required
+                    />
+                  </label>
+                  <label className="block text-sm text-slate-700">
+                    Confirm new password
+                    <input
+                      type="password"
+                      value={passwordValues.confirmPassword}
+                      onChange={(event) => setPasswordValues((current) => ({ ...current, confirmPassword: event.target.value }))}
+                      className="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                      required
+                    />
+                  </label>
+                  {passwordError ? <p className="text-sm text-rose-600">{passwordError}</p> : null}
+                  {passwordSuccess ? <p className="text-sm text-emerald-600">{passwordSuccess}</p> : null}
+                  <button
+                    type="submit"
+                    disabled={passwordLoading}
+                    className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {passwordLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+                    Change password
+                  </button>
+                </form>
+              </div>
+            </div>
+          ) : null}
         </aside>
       </div>
     </div>
