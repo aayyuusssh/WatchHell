@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom"
-import { Clapperboard, LogOut, Menu, Search, Upload, UserRound, X } from "lucide-react"
+import { Clapperboard, LogOut, Menu, Search, Settings, Upload, UserRound, X } from "lucide-react"
 import { useState } from "react"
 import { authApi } from "../lib/api.js"
 import { avatarUrl } from "../lib/format.js"
@@ -7,7 +7,8 @@ import { avatarUrl } from "../lib/format.js"
 const navItems = [
   { to: "/", label: "Home" },
   { to: "/upload", label: "Upload" },
-  { to: "/profile", label: "Profile" }
+  { to: "/profile", label: "Profile" },
+  { to: "/settings", label: "Settings" }
 ]
 
 export default function Layout({ user, onLogout }) {
@@ -108,7 +109,7 @@ export default function Layout({ user, onLogout }) {
                     }`
                   }
                 >
-                  {item.to === "/upload" ? <Upload className="h-4 w-4" /> : <UserRound className="h-4 w-4" />}
+                  {item.to === "/upload" ? <Upload className="h-4 w-4" /> : item.to === "/settings" ? <Settings className="h-4 w-4" /> : <UserRound className="h-4 w-4" />}
                   {item.label}
                 </NavLink>
               ))}

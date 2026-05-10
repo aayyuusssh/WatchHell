@@ -7,6 +7,7 @@ import AuthPage from "./pages/AuthPage.jsx"
 import HomePage from "./pages/HomePage.jsx"
 import UploadPage from "./pages/UploadPage.jsx"
 import ProfilePage from "./pages/ProfilePage.jsx"
+import SettingsPage from "./pages/SettingsPage.jsx"
 import VideoPage from "./pages/VideoPage.jsx"
 
 function RequireAuth({ user, loading, children }) {
@@ -58,6 +59,7 @@ export default function App() {
         <Route path="/upload" element={<UploadPage user={user} />} />
         <Route path="/profile" element={<ProfilePage user={user} onUserUpdate={setUser} />} />
         <Route path="/profile/:username" element={<ProfilePage user={user} onUserUpdate={setUser} />} />
+        <Route path="/settings" element={<SettingsPage user={user} onUserUpdate={setUser} />} />
         <Route path="/watch/:videoId" element={<VideoPage user={user} />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
