@@ -1,37 +1,52 @@
-# WatchHell
+# WatchHell 🚀
 
-WatchHell is a full-stack creator streaming studio built with React, Vite, Node.js, Express, and MongoDB. It supports user authentication, video uploads, comments, subscriptions, and profile management.
+**WatchHell** is a full-stack creator streaming studio built with React, Vite, Node.js, Express, and MongoDB.
 
-## Features
+It supports:
+- user authentication
+- video uploads
+- comments and likes
+- subscriptions
+- profile and settings management
+- Cloudinary image uploads
 
-- User signup, login, and JWT-based authentication
-- Video upload and listing
-- Comments and likes
-- Channel subscription system
-- Profile page with avatar and cover images
-- Profile settings page to update username, full name, email, and password
-- Cloudinary integration for image uploads
+---
 
-## Tech Stack
+## ⭐ Highlights
 
-- Frontend: React, Vite, Tailwind CSS, React Router
-- Backend: Node.js, Express, MongoDB, Mongoose
-- Authentication: JWT
-- Image uploads: Cloudinary
-- Deployment: Vercel (frontend) + Render / Railway / other Node host (backend)
+- Modern React + Vite frontend
+- Backend API with Express and MongoDB
+- JWT authentication with refresh token support
+- Profile settings for username, full name, email, and password
+- Clean separate Settings page
+- Deployment-ready structure for Vercel + Render
 
-## Repo structure
+---
 
-- `client/` - React frontend app
-- `src/` - backend source code
-- `src/app.js` - Express app and routes
-- `src/index.js` - backend entry point
-- `src/controllers/` - request handlers
-- `src/routes/` - API route definitions
-- `src/models/` - Mongoose models
-- `src/utils/` - custom helpers and error wrappers
+## 🧰 Tech Stack
 
-## Getting started locally
+- Frontend: **React**, **Vite**, **Tailwind CSS**, **React Router**
+- Backend: **Node.js**, **Express**, **MongoDB**, **Mongoose**
+- Auth: **JWT**
+- Uploads: **Cloudinary**
+- Deploy: **Vercel** (frontend) + **Render** (backend)
+
+---
+
+## 📁 Repo structure
+
+- `client/` — React frontend app
+- `src/` — backend source code
+- `src/app.js` — Express app and route registration
+- `src/index.js` — backend entry point
+- `src/controllers/` — request handlers
+- `src/routes/` — API routes
+- `src/models/` — Mongoose schemas
+- `src/utils/` — helpers, error wrappers, Cloudinary helper
+
+---
+
+## 🚀 Local setup
 
 ### 1. Install dependencies
 
@@ -42,9 +57,11 @@ cd client
 npm install
 ```
 
-### 2. Configure environment variables
+### 2. Configure backend env
 
-Create a `.env` file in the backend root with required variables, for example:
+Create `./.env` in the backend root.
+
+> These are example variables only — do not commit secrets.
 
 ```env
 PORT=8000
@@ -59,13 +76,17 @@ CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 ```
 
-In the frontend `client/` directory, optionally create `client/.env` for local development:
+### 3. Configure frontend env (optional)
+
+Create `client/.env` for local frontend API base URL:
 
 ```env
 VITE_API_BASE_URL=http://localhost:8000/api/v1
 ```
 
-### 3. Run locally
+> `VITE_API_BASE_URL` is read at build time, so frontend must be rebuilt after changing it.
+
+### 4. Run locally
 
 Backend:
 
@@ -81,34 +102,40 @@ cd "c:\Users\Lenovo\OneDrive\Documents\New project\WatchHell\client"
 npm run dev
 ```
 
-Then open the Vite URL shown in the terminal.
+Open the Vite app URL shown in the terminal.
 
-## Deployment
+---
 
-### Backend
+## ☁️ Deployment
 
-- Deploy the backend on Render, Railway, or another Node hosting service.
-- Set environment variables on the host exactly as in the `.env` file.
-- Set `CORS_ORIGIN` to your frontend domain, for example:
+### Backend on Render
+
+This repo uses **Render** for backend deployment.
+
+- Deploy the backend service on **Render**
+- Add the same env vars from your local `.env`
+- Set `CORS_ORIGIN` to your frontend domain:
 
 ```text
 https://watch-hell.vercel.app
 ```
 
-### Frontend
+> Do not use `*` with `credentials: true`.
 
-- Deploy the `client/` app on Vercel.
-- Add a Vercel environment variable:
+### Frontend on Vercel
+
+- Deploy the `client/` app on **Vercel**
+- Add this env var in Vercel:
 
 ```text
-VITE_API_BASE_URL=https://<your-backend-domain>/api/v1
+VITE_API_BASE_URL=https://<your-render-backend-domain>/api/v1
 ```
 
-- Redeploy after updating env vars.
+- Redeploy the app after saving the variable.
 
-## API Endpoints
+---
 
-Some main backend routes:
+## 🔌 Main API endpoints
 
 - `POST /api/v1/users/register`
 - `POST /api/v1/users/login`
@@ -121,12 +148,17 @@ Some main backend routes:
 - `GET /api/v1/comment/:videoId`
 - `POST /api/v1/comment/:videoId`
 
-## Notes
+---
 
-- `VITE_API_BASE_URL` is only read at build time, so update it in Vercel and redeploy.
-- The backend uses CORS with `credentials: true`, so `CORS_ORIGIN` cannot be `*`.
-- Keep `.env` out of GitHub; `.gitignore` already ignores it.
+## 📝 Notes
 
-## License
+- Keep secret keys out of GitHub.
+- `VITE_API_BASE_URL` is only applied during the frontend build.
+- `CORS_ORIGIN` cannot be `*` with `credentials: true`.
+- Use Render for backend and Vercel for frontend.
+
+---
+
+## 📄 License
 
 MIT
